@@ -1,0 +1,65 @@
+#image statistics for final project 
+#will give us mean pixel intensity, contrast and brightness, can help determine which types of images are easiest to read
+#set a standard of image type that can be fed into system 
+import cv2
+import numpay as np 
+image = cv2.imread('eye_square.jpg')
+mean_intensity = np.mean('image')
+std_dev_intensity = np.std('image')
+#image visualizaton 
+#visualize set of sample data to understand the types of images and variablility 
+import matplotlib.pyplot as plt
+image_paths = ['image from training set']
+fig, axes = plt.subplots(1, len(image_paths), figsize =(12,4))
+for i, path in enumerate(imaege_paths):
+    image = cv2.imread(path)
+    image = cv2.cutColor(image, cv2.COLOR_BGR2RGB)
+    axes[i].imshow(image)
+    axes[i].axis('off')
+    axes[i].set_title(f"Image {i +1}')
+    plt.show()
+#class distribution 
+import os
+
+# Assuming images are organized in folders by class
+data_dir = 'path/to/dataset'
+classes = os.listdir(data_dir)
+
+class_counts = {cls: len(os.listdir(os.path.join(data_dir, cls))) for cls in classes}
+print("Class Distribution:")
+for cls, count in class_counts.items():
+    print(f"{cls}: {count} images")
+#data augmentation 
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Create an ImageDataGenerator with augmentation parameters
+datagen = ImageDataGenerator(
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    vertical_flip=True,
+    fill_mode='nearest'
+)
+
+# Load an example image
+image = cv2.imread('example_image.jpg')
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
+
+# Display augmented images
+fig, axes = plt.subplots(1, 5, figsize=(15, 3))
+axes[0].imshow(image)
+axes[0].set_title("Original")
+
+# Generate and display augmented images
+for i in range(1, 5):
+    augmented_image = datagen.random_transform(image)
+    axes[i].imshow(augmented_image)
+    axes[i].set_title(f"Augmented {i}")
+
+for ax in axes:
+    ax.axis('off')
+
+plt.show()
