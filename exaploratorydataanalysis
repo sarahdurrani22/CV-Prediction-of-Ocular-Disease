@@ -1,0 +1,179 @@
+# ocular_data = pd.read_excel(File_path)
+
+# Display the first few rows of the dataset
+print("First few rows of the dataset:")
+print(ocular_data.head())
+
+# Summary Statistics
+print("\nSummary Statistics:")
+print(ocular_data.describe())
+
+# Data Visualization
+    #  Histograms
+ocular_data.hist(figsize=(12, 10), bins=20)
+plt.suptitle("Histograms of Numerical Features")
+plt.show()
+
+    #Box Plots
+plt.figure(figsize=(12, 8))
+sns.boxplot(data=ocular_data, orient="h")
+plt.title("Box Plots of Numerical Features")
+plt.show()
+
+    #Pair Plots/Scatter Plots
+sns.pairplot(ocular_data, hue="Target_Class", diag_kind="kde")
+plt.suptitle("Pair Plots of Numerical Features")
+plt.show()
+
+# Missing Values
+# Display the percentage of missing values in each column
+missing_percentage = ocular_data.isnull().mean() * 100
+print("\nPercentage of Missing Values in Each Column:")
+print(missing_percentage)
+
+#Correlation Analysis
+correlation_matrix = ocular_data.corr()
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Correlation Matrix")
+plt.show()
+
+#Categorical Variables
+# Assuming 'Target_Class' is the column representing the target class
+plt.figure(figsize=(8, 6))
+sns.countplot(x="Target_Class", data=ocular_data)
+plt.title("Distribution of Target Classes")
+plt.show()
+
+#.7 class distribution 
+class_labels_left = df['Left-Diagnostic Keywords'].str.split(',').explode().str.strip()
+class_labels_right = df['Right-Diagnostic Keywords'].str.split(',').explode().str.strip()
+
+# Combine class labels from both left and right columns
+all_class_labels = pd.concat([class_labels_left, class_labels_right])
+
+# Count the occurrences of each class
+class_distribution = all_class_labels.value_counts()
+
+# Plot the class distribution
+plt.figure(figsize=(12, 6))
+class_distribution.plot(kind='bar', color='skyblue')
+plt.title('Class Distribution')
+plt.xlabel('Class Labels')
+plt.ylabel('Count')
+plt.xticks(rotation=45, ha='right')
+plt.show()
+
+#image statistics for final project 
+#will give us mean pixel intensity, contrast and brightness, can help determine which types of images are easiest to read
+#set a standard of image type that can be fed into system 
+image = cv2.imread('C:\\Users\\elanw\\OneDrive\\Pictures\\eye_square.jpg')
+mean_intensity = np.mean('C:\\Users\\elanw\\OneDrive\\Pictures\\eye_square.jpg')
+std_dev_intensity = np.std('C:\\Users\\elanw\\OneDrive\\Pictures\\eye_square.jpg')
+
+#image visualizaton 
+#visualize set of sample data to understand the types of images and variablility 
+image_paths = ['C:\\Users\\elanw\\OneDrive\\Pictures\\eye_square.jpg']
+fig, axes = plt.subplots(1, len(image_paths), figsize =(12,4))
+for i, path in enumerate(imaege_paths):
+    image = cv2.imread(path)
+    image = cv2.cutColor(image, cv2.COLOR_BGR2RGB)
+    axes[i].imshow(image)
+    axes[i].axis('off')
+    axes[i].set_title(f"Image {i +1}')
+    plt.show()
+                      
+#data augmentation 
+# Create an ImageDataGenerator with augmentation parameters
+datagen = ImageDataGenerator(
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    vertical_flip=True,
+    fill_mode='nearest'
+)
+
+# Load an example image
+image = cv2.imread('C:\\Users\\elanw\\OneDrive\\Documents\\IntroToAI\\ocular_dataset\\preprocessed_images\\') #dataset of preprocessed images pulled from vgg19 with one sided images
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
+
+# Display augmented images
+fig, axes = plt.subplots(1, 5, figsize=(15, 3))
+axes[0].imshow(image)
+axes[0].set_title("Original")
+
+# Generate and display augmented images
+#do we want to use eye.square for this or an image of the actual fundus 
+for i in range(1, 5):
+    augmented_image = datagen.random_transform(image)
+    axes[i].imshow(augmented_image)
+    axes[i].set_title(f"Augmented {i}")
+
+for ax in axes:
+    ax.axis('off')
+
+plt.show()
+
+
+
+
+#filtering and denoising images 
+
+# Load the sample image (replace 'path_to_image.jpg' with your actual image path)
+image_path = 'path_to_image.jpg'
+original_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+# Display the original image
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 2, 1)
+plt.imshow(original_image, cmap='gray')
+plt.title('Original Image')
+
+# 1. Apply Gaussian filter for denoising
+def apply_gaussian_filter(image, sigma=1):
+    filtered_image = cv2.GaussianBlur(image, (0, 0), sigma)
+    return filtered_image
+
+# Set the value of sigma for the Gaussian filter
+sigma_value = 1
+
+# Apply Gaussian filter to the original image
+denoised_image = apply_gaussian_filter(original_image, sigma=sigma_value)
+
+# Display the denoised image
+plt.subplot(1, 2, 2)
+plt.imshow(denoised_image, cmap='gray')
+plt.title('Denoised Image (Sigma={})'.format(sigma_value))
+
+plt.show()
+
+
+# Histogram Equalization
+def apply_histogram_equalization(image):
+    equalized_image = exposure.equalize_hist(image)
+    return equalized_image
+
+# Understanding Domain-Specific Challenges
+def handle_specific_challenges(image):
+    # Your domain-specific preprocessing logic goes here
+    # This could involve dealing with specific lighting conditions, artifacts, etc.
+    processed_image = image  # Placeholder for actual processing
+    return processed_image
+
+
+
+#t-SNE implementation for dimensionality reduction 
+# Assuming X is your feature matrix and y is the corresponding labels
+X_normalized = StandardScaler().fit_transform(X)
+tsne = TSNE(n_components=2, random_state=42)
+X_tsne = tsne.fit_transform(X_normalized)
+
+# Visualize the t-SNE representation
+plt.figure(figsize=(10, 8))
+scatter = plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=y, cmap='viridis')
+plt.title('t-SNE Visualization')
+plt.legend(*scatter.legend_elements(), title='Classes')
+plt.show()
